@@ -38,12 +38,21 @@ class TappablePolylineLayer extends PolylineLayer {
   final void Function(List<TaggedPolyline>, TapUpDetails tapPosition)? onTap;
 
   /// The optional callback to call when no polyline was hit by the tap
-  final void Function(TapUpDetails tapPosition)? onMiss;
+  final void Function(TapUpDetails tapPosition)? onTapMiss;
+
+  /// Callback when polyline has long press
+  final void Function(List<TaggedPolyline>, LongPressEndDetails tapPosition)?
+      onLongPress;
+
+  /// The optional callback to call when no polyline was hit by the tap
+  final void Function(LongPressEndDetails tapPosition)? onLongPressMiss;
 
   TappablePolylineLayer({
     this.polylines = const [],
     this.onTap,
-    this.onMiss,
+    this.onTapMiss,
+    this.onLongPress,
+    this.onLongPressMiss,
     this.pointerDistanceTolerance = 15,
     polylineCulling = false,
     key,
@@ -92,8 +101,27 @@ class TappablePolylineLayer extends PolylineLayer {
           _zoomMap(details, context);
         },
         onTapUp: (TapUpDetails details) {
-          _forwardCallToMapOptions(details, context);
-          _handlePolylineTap(details, onTap, onMiss);
+          _forwardTapCallToMapOptions(details, context);
+          final candidates = _solveCandidates(details.localPosition);
+
+          if (candidates.isEmpty) {
+            return onTapMiss?.call(details);
+          } else {
+            // We look up in the map of distances to the tap, and choose the shortest one.
+            final closestToTapKey = candidates.keys.reduce(min);
+            onTap?.call(candidates[closestToTapKey] ?? [], details);
+          }
+        },
+        onLongPressEnd: (LongPressEndDetails details) {
+          _forwardLongPressCallToMapOptions(details, context);
+          final candidates = _solveCandidates(details.localPosition);
+          if (candidates.isEmpty) {
+            return onLongPressMiss?.call(details);
+          } else {
+            // We look up in the map of distances to the tap, and choose the shortest one.
+            final closestToTapKey = candidates.keys.reduce(min);
+            onLongPress?.call(candidates[closestToTapKey] ?? [], details);
+          }
         },
         child: Stack(
           children: [
@@ -107,8 +135,7 @@ class TappablePolylineLayer extends PolylineLayer {
     );
   }
 
-  void _handlePolylineTap(
-      TapUpDetails details, Function? onTap, Function? onMiss) {
+  Map<double, List<TaggedPolyline>> _solveCandidates(Offset localPosition) {
     // We might hit close to multiple polylines. We will therefore keep a reference to these in this map.
     Map<double, List<TaggedPolyline>> candidates = {};
 
@@ -121,7 +148,7 @@ class TappablePolylineLayer extends PolylineLayer {
         // We consider the points point1, point2 and tap points in a triangle
         var point1 = currentPolyline._offsets[j];
         var point2 = currentPolyline._offsets[j + 1];
-        var tap = details.localPosition;
+        var tap = localPosition;
 
         // To determine if we have tapped in between two po ints, we
         // calculate the length from the tapped point to the line
@@ -167,14 +194,10 @@ class TappablePolylineLayer extends PolylineLayer {
       }
     }
 
-    if (candidates.isEmpty) return onMiss?.call(details);
-
-    // We look up in the map of distances to the tap, and choose the shortest one.
-    var closestToTapKey = candidates.keys.reduce(min);
-    onTap!(candidates[closestToTapKey], details);
+    return candidates;
   }
 
-  void _forwardCallToMapOptions(TapUpDetails details, BuildContext context) {
+  void _forwardTapCallToMapOptions(TapUpDetails details, BuildContext context) {
     final latlng = _offsetToLatLng(details.localPosition, context.size!.width,
         context.size!.height, context);
 
@@ -185,6 +208,20 @@ class TappablePolylineLayer extends PolylineLayer {
 
     // Forward the onTap call to map.options so that we won't break onTap
     mapOptions.onTap?.call(tapPosition, latlng);
+  }
+
+  void _forwardLongPressCallToMapOptions(
+      LongPressEndDetails details, BuildContext context) {
+    final latlng = _offsetToLatLng(details.localPosition, context.size!.width,
+        context.size!.height, context);
+
+    final mapOptions = MapOptions.of(context);
+
+    final tapPosition =
+        TapPosition(details.globalPosition, details.localPosition);
+
+    // Forward the onTap call to map.options so that we won't break onTap
+    mapOptions.onLongPress?.call(tapPosition, latlng);
   }
 
   double _distance(Offset point1, Offset point2) {

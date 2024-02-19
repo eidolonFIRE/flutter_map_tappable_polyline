@@ -106,7 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   polylines.map((polyline) => polyline.tag).join(',') +
                   ' at ' +
                   tapPosition.globalPosition.toString()),
-              onMiss: (tapPosition) {
+              onLongPress: (polylines, tapPosition) => print('LongPressed: ' +
+                  polylines.map((polyline) => polyline.tag).join(',') +
+                  ' at ' +
+                  tapPosition.globalPosition.toString()),
+              onTapMiss: (tapPosition) {
                 print('No polyline was tapped at position ' +
                     tapPosition.globalPosition.toString());
               })
