@@ -105,30 +105,34 @@ class TappablePolylineLayer extends PolylineLayer {
           _zoomMap(details, context);
         },
         onTapUp: (TapUpDetails details) {
-          _forwardTapCallToMapOptions(details, context);
           if (enabled) {
             final candidates = _solveCandidates(details.localPosition);
 
             if (candidates.isEmpty) {
+              _forwardTapCallToMapOptions(details, context);
               return onTapMiss?.call(details);
             } else {
               // We look up in the map of distances to the tap, and choose the shortest one.
               final closestToTapKey = candidates.keys.reduce(min);
               onTap?.call(candidates[closestToTapKey] ?? [], details);
             }
+          } else {
+            _forwardTapCallToMapOptions(details, context);
           }
         },
         onLongPressEnd: (LongPressEndDetails details) {
-          _forwardLongPressCallToMapOptions(details, context);
           if (enabled) {
             final candidates = _solveCandidates(details.localPosition);
             if (candidates.isEmpty) {
+              _forwardLongPressCallToMapOptions(details, context);
               return onLongPressMiss?.call(details);
             } else {
               // We look up in the map of distances to the tap, and choose the shortest one.
               final closestToTapKey = candidates.keys.reduce(min);
               onLongPress?.call(candidates[closestToTapKey] ?? [], details);
             }
+          } else {
+            _forwardLongPressCallToMapOptions(details, context);
           }
         },
         child: Stack(
