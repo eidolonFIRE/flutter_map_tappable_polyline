@@ -50,10 +50,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_map
-      sha256: "2b925948b675ef74ca524179fb133dbe0a21741889ccf56ad08fc8dcc38ba94b"
+      sha256: cda8d72135b697f519287258b5294a57ce2f2a5ebf234f0e406aad4dc14c9399
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.1"
+    version: "6.1.0"
   http:
     dependency: transitive
     description:
@@ -134,14 +134,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.0"
-  pedantic:
-    dependency: "direct dev"
-    description:
-      name: pedantic
-      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.11.1"
   polylabel:
     dependency: transitive
     description:
@@ -220,5 +212,5 @@ packages:
     source: hosted
     version: "2.0.0"
 sdks:
-  dart: ">=3.2.0-0 <4.0.0"
-  flutter: ">=3.10.0"
+  dart: ">=3.2.0 <4.0.0"
+  flutter: ">=3.19.0"

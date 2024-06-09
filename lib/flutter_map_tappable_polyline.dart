@@ -47,6 +47,9 @@ class TappablePolylineLayer extends PolylineLayer {
   /// The optional callback to call when no polyline was hit by the tap
   final void Function(LongPressEndDetails tapPosition)? onLongPressMiss;
 
+  /// Bypass all clicks
+  final bool enabled;
+
   TappablePolylineLayer({
     this.polylines = const [],
     this.onTap,
@@ -54,6 +57,7 @@ class TappablePolylineLayer extends PolylineLayer {
     this.onLongPress,
     this.onLongPressMiss,
     this.pointerDistanceTolerance = 15,
+    this.enabled = true,
     polylineCulling = false,
     key,
   }) : super(key: key, polylines: polylines, polylineCulling: polylineCulling);
@@ -102,25 +106,29 @@ class TappablePolylineLayer extends PolylineLayer {
         },
         onTapUp: (TapUpDetails details) {
           _forwardTapCallToMapOptions(details, context);
-          final candidates = _solveCandidates(details.localPosition);
+          if (enabled) {
+            final candidates = _solveCandidates(details.localPosition);
 
-          if (candidates.isEmpty) {
-            return onTapMiss?.call(details);
-          } else {
-            // We look up in the map of distances to the tap, and choose the shortest one.
-            final closestToTapKey = candidates.keys.reduce(min);
-            onTap?.call(candidates[closestToTapKey] ?? [], details);
+            if (candidates.isEmpty) {
+              return onTapMiss?.call(details);
+            } else {
+              // We look up in the map of distances to the tap, and choose the shortest one.
+              final closestToTapKey = candidates.keys.reduce(min);
+              onTap?.call(candidates[closestToTapKey] ?? [], details);
+            }
           }
         },
         onLongPressEnd: (LongPressEndDetails details) {
           _forwardLongPressCallToMapOptions(details, context);
-          final candidates = _solveCandidates(details.localPosition);
-          if (candidates.isEmpty) {
-            return onLongPressMiss?.call(details);
-          } else {
-            // We look up in the map of distances to the tap, and choose the shortest one.
-            final closestToTapKey = candidates.keys.reduce(min);
-            onLongPress?.call(candidates[closestToTapKey] ?? [], details);
+          if (enabled) {
+            final candidates = _solveCandidates(details.localPosition);
+            if (candidates.isEmpty) {
+              return onLongPressMiss?.call(details);
+            } else {
+              // We look up in the map of distances to the tap, and choose the shortest one.
+              final closestToTapKey = candidates.keys.reduce(min);
+              onLongPress?.call(candidates[closestToTapKey] ?? [], details);
+            }
           }
         },
         child: Stack(
