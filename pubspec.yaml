@@ -1,11 +1,11 @@
 name: flutter_map_tappable_polyline
 description: A flutter_map plugin that adds Polyline class with onTap event
-version: 6.1.1
+version: 6.1.2
 homepage: https://github.com/OwnWeb/flutter_map_tappable_polyline
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
-  flutter: ">=3.19.0"
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:

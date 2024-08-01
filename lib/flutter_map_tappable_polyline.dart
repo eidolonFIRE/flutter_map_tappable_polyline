@@ -97,51 +97,53 @@ class TappablePolylineLayer extends PolylineLayer {
     }
 
     return Container(
-      child: GestureDetector(
-        onDoubleTap: () {
-          // For some strange reason i have to add this callback for the onDoubleTapDown callback to be called.
-        },
-        onDoubleTapDown: (TapDownDetails details) {
-          _zoomMap(details, context);
-        },
-        onTapUp: (TapUpDetails details) {
-          if (enabled) {
-            final candidates = _solveCandidates(details.localPosition);
+      child: MobileLayerTransformer(
+        child: GestureDetector(
+          onDoubleTap: () {
+            // For some strange reason i have to add this callback for the onDoubleTapDown callback to be called.
+          },
+          onDoubleTapDown: (TapDownDetails details) {
+            _zoomMap(details, context);
+          },
+          onTapUp: (TapUpDetails details) {
+            if (enabled) {
+              final candidates = _solveCandidates(details.localPosition);
 
-            if (candidates.isEmpty) {
+              if (candidates.isEmpty) {
+                _forwardTapCallToMapOptions(details, context);
+                return onTapMiss?.call(details);
+              } else {
+                // We look up in the map of distances to the tap, and choose the shortest one.
+                final closestToTapKey = candidates.keys.reduce(min);
+                onTap?.call(candidates[closestToTapKey] ?? [], details);
+              }
+            } else {
               _forwardTapCallToMapOptions(details, context);
-              return onTapMiss?.call(details);
-            } else {
-              // We look up in the map of distances to the tap, and choose the shortest one.
-              final closestToTapKey = candidates.keys.reduce(min);
-              onTap?.call(candidates[closestToTapKey] ?? [], details);
             }
-          } else {
-            _forwardTapCallToMapOptions(details, context);
-          }
-        },
-        onLongPressEnd: (LongPressEndDetails details) {
-          if (enabled) {
-            final candidates = _solveCandidates(details.localPosition);
-            if (candidates.isEmpty) {
+          },
+          onLongPressEnd: (LongPressEndDetails details) {
+            if (enabled) {
+              final candidates = _solveCandidates(details.localPosition);
+              if (candidates.isEmpty) {
+                _forwardLongPressCallToMapOptions(details, context);
+                return onLongPressMiss?.call(details);
+              } else {
+                // We look up in the map of distances to the tap, and choose the shortest one.
+                final closestToTapKey = candidates.keys.reduce(min);
+                onLongPress?.call(candidates[closestToTapKey] ?? [], details);
+              }
+            } else {
               _forwardLongPressCallToMapOptions(details, context);
-              return onLongPressMiss?.call(details);
-            } else {
-              // We look up in the map of distances to the tap, and choose the shortest one.
-              final closestToTapKey = candidates.keys.reduce(min);
-              onLongPress?.call(candidates[closestToTapKey] ?? [], details);
             }
-          } else {
-            _forwardLongPressCallToMapOptions(details, context);
-          }
-        },
-        child: Stack(
-          children: [
-            CustomPaint(
-              painter: PolylinePainter(lines, mapState),
-              size: size,
-            ),
-          ],
+          },
+          child: Stack(
+            children: [
+              CustomPaint(
+                painter: PolylinePainter(lines, mapState),
+                size: size,
+              ),
+            ],
+          ),
         ),
       ),
     );
