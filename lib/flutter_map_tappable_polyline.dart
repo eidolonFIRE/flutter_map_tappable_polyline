@@ -96,7 +96,7 @@ class TappablePolylineLayer extends PolylineLayer {
       }
     }
 
-    return Container(
+    return MobileLayerTransformer(
       child: GestureDetector(
         onDoubleTap: () {
           // For some strange reason i have to add this callback for the onDoubleTapDown callback to be called.
@@ -137,11 +137,9 @@ class TappablePolylineLayer extends PolylineLayer {
         },
         child: Stack(
           children: [
-            MobileLayerTransformer(
-              child: CustomPaint(
-                painter: PolylinePainter(lines, mapState),
-                size: size,
-              ),
+            CustomPaint(
+              painter: PolylinePainter(lines, mapState),
+              size: size,
             ),
           ],
         ),
